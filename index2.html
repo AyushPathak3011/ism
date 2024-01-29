@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Shopping Cart</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      #cart {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Simple Shopping Cart</h1>
+
+    <div id="items">
+      <h2>Items</h2>
+      <p>
+        Item 1 - $10
+        <button onclick="addItem('Item 1', 10)">Add to Cart</button>
+      </p>
+      <p>
+        Item 2 - $15
+        <button onclick="addItem('Item 2', 15)">Add to Cart</button>
+      </p>
+    </div>
+
+    <div id="cart">
+      <h2>Shopping Cart</h2>
+      <ul id="cart-list"></ul>
+      <p>Total: $<span id="total">0</span></p>
+    </div>
+
+    <script>
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let total = 0;
+
+      function addItem(itemName, itemPrice) {
+        // Update the local cart variable
+        cart.push({ name: itemName, price: itemPrice });
+        total += itemPrice;
+
+        // Save the cart to localStorage
+        localStorage.setItem("cart", JSON.stringify(cart));
+
+        // Update cart list
+        updateCart();
+
+        // Update total
+        document.getElementById("total").innerText = total;
+
+        // Fetch and update the number and type of items in the cart
+        fetch("/cart")
+          .then((response) => response.json())
+          .then((data) => {
+            const cartInfo = `(${data.items.length} items): ${data.items
+              .map((item) => item.name)
+              .join(", ")}`;
+            document.getElementById("cart-info").innerText = cartInfo;
+          });
+      }
+
+      function updateCart() {
+        const cartList = document.getElementById("cart-list");
+        cartList.innerHTML = "";
+
+        cart.forEach((item) => {
+          const li = document.createElement("li");
+          li.innerText = `${item.name} - $${item.price}`;
+          cartList.appendChild(li);
+        });
+      }
+
+      // Load the cart on page load
+      window.onload = function () {
+        updateCart();
+        document.getElementById("total").innerText = total;
+      };
+    </script>
+  </body>
+</html>
